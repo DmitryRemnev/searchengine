@@ -1,11 +1,9 @@
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
-    - url: https://www.skillbox.ru
-      name: Skillbox
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
+    - url: http://srpp63.ru/
+      name: САМАРСКОЕ РЕЧНОЕ ПАССАЖИРСКОЕ ПРЕДПРИЯТИЕ
+    - url: https://radiomv.ru/
+      name: Радио Милицейская волна
 
 server:
   port: 8080
@@ -15,11 +13,10 @@ spring:
     username: root
     password: Tgb10Ujm73
     url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
-
-jpa:
-  properties:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      dialect: org.hibernate.dialect.MySQL8Dialect
-  hibernate:
-    ddl-auto: update
-  show-sql: true
+      ddl-auto: update
+    show-sql: true
