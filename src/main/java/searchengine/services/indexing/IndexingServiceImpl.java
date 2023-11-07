@@ -1,13 +1,16 @@
-package searchengine.services;
+package searchengine.services.indexing;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
+import searchengine.constant.Constants;
 import searchengine.dto.RecursiveTaskDto;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.SiteHandler;
+import searchengine.services.utility.UtilityService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +29,7 @@ public class IndexingServiceImpl implements IndexingService {
 
         for (Site site : sites.getSites()) {
             if (utilityService.isIndexingNow(site.getName())) {
-                return new IndexingResponse(false, "Индексация уже запущена");
+                return new IndexingResponse(false, Constants.ALREADY_LAUNCHED);
             }
 
             RecursiveTaskDto dto = RecursiveTaskDto.builder()
@@ -54,6 +57,6 @@ public class IndexingServiceImpl implements IndexingService {
 
             return new IndexingResponse(true, null);
         }
-        return new IndexingResponse(false, "Индексация не запущена");
+        return new IndexingResponse(false, Constants.NOT_RUNNING);
     }
 }

@@ -1,14 +1,14 @@
 package searchengine.services;
 
+import searchengine.constant.Constants;
 import searchengine.dto.RecursiveTaskDto;
 
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
 
 public class SiteRecursiveTask extends RecursiveAction {
-    public static final String REG_TYPES_FILES = ".*\\.(jpg|docx|doc|pdf|png|zip)";
     private final RecursiveTaskDto dto;
-    public final PageHandler pageHandler;
+    private final PageHandler pageHandler;
     private final Set<String> allUrls;
 
     public SiteRecursiveTask(PageHandler pageHandler, RecursiveTaskDto dto) {
@@ -36,7 +36,8 @@ public class SiteRecursiveTask extends RecursiveAction {
                 allUrls.add(url);
             }
 
-            var task = new SiteRecursiveTask(new PageHandler(dto, url), allUrls, dto);
+            var pageHandler = new PageHandler(dto, url);
+            var task = new SiteRecursiveTask(pageHandler, allUrls, dto);
             task.fork();
             taskList.add(task);
         }
@@ -47,6 +48,6 @@ public class SiteRecursiveTask extends RecursiveAction {
     }
 
     private boolean isNotAdd(String url, Set<String> allUrls) {
-        return allUrls.contains(url) || url.matches(REG_TYPES_FILES);
+        return allUrls.contains(url) || url.matches(Constants.REG_TYPES_FILES);
     }
 }

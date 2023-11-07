@@ -1,7 +1,7 @@
 package searchengine.services;
 
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.transaction.annotation.Transactional;
+import searchengine.constant.Constants;
 import searchengine.dto.RecursiveTaskDto;
 import searchengine.model.Site;
 import searchengine.model.Status;
@@ -10,15 +10,13 @@ import searchengine.repositories.SiteRepository;
 import java.util.Date;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configurable
 public class SiteHandler implements Runnable {
-    SiteRepository siteRepository;
-    String url;
-    RecursiveTaskDto dto;
-    ForkJoinPool forkJoinPool = new ForkJoinPool();
-    Site site;
+    private final SiteRepository siteRepository;
+    private final String url;
+    private final RecursiveTaskDto dto;
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool();
 
     public SiteHandler(RecursiveTaskDto dto) {
         this.siteRepository = dto.getSiteRepository();
@@ -27,19 +25,16 @@ public class SiteHandler implements Runnable {
     }
 
     @Override
-    @Transactional
     public void run() {
-        site = createSite();
+        Site site = createSite();
         try {
-            RecursiveTaskDto paramDto = RecursiveTaskDto.builder()
-                    .siteRepository(siteRepository)
-                    .pageRepository(dto.getPageRepository())
-                    .site(site)
-                    .build();
-            forkJoinPool.invoke(new SiteRecursiveTask(new PageHandler(paramDto, url), paramDto));
+            RecursiveTaskDto paramDto = createDto(site);
+            var pageHandler = new PageHandler(paramDto, url);
+            var siteRecursiveTask = new SiteRecursiveTask(pageHandler, paramDto);
+            forkJoinPool.invoke(siteRecursiveTask);
             setIndexedStatus(site);
         } catch (CancellationException e) {
-            setFailedStatus(site, "Индексация остановлена пользователем");
+            setFailedStatus(site, Constants.CANCEL);
         } catch (Exception e) {
             setFailedStatus(site, e.getMessage());
         }
@@ -47,6 +42,14 @@ public class SiteHandler implements Runnable {
 
     public void stop() {
         forkJoinPool.shutdownNow();
+    }
+
+    private RecursiveTaskDto createDto(Site site) {
+        return RecursiveTaskDto.builder()
+                .siteRepository(siteRepository)
+                .pageRepository(dto.getPageRepository())
+                .site(site)
+                .build();
     }
 
     private Site createSite() {
