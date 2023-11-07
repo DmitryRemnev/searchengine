@@ -1,19 +1,24 @@
 package searchengine.services;
 
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Transactional;
 import searchengine.dto.RecursiveTaskDto;
 import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repositories.SiteRepository;
 
 import java.util.Date;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configurable
 public class SiteHandler implements Runnable {
     SiteRepository siteRepository;
     String url;
     RecursiveTaskDto dto;
+    ForkJoinPool forkJoinPool = new ForkJoinPool();
+    Site site;
 
     public SiteHandler(RecursiveTaskDto dto) {
         this.siteRepository = dto.getSiteRepository();
@@ -22,20 +27,26 @@ public class SiteHandler implements Runnable {
     }
 
     @Override
+    @Transactional
     public void run() {
-        Site site = createSite();
-
+        site = createSite();
         try {
             RecursiveTaskDto paramDto = RecursiveTaskDto.builder()
                     .siteRepository(siteRepository)
                     .pageRepository(dto.getPageRepository())
                     .site(site)
                     .build();
-            new ForkJoinPool().invoke(new SiteRecursiveTask(new PageHandler(paramDto, url), paramDto));
+            forkJoinPool.invoke(new SiteRecursiveTask(new PageHandler(paramDto, url), paramDto));
             setIndexedStatus(site);
+        } catch (CancellationException e) {
+            setFailedStatus(site, "Индексация остановлена пользователем");
         } catch (Exception e) {
             setFailedStatus(site, e.getMessage());
         }
+    }
+
+    public void stop() {
+        forkJoinPool.shutdownNow();
     }
 
     private Site createSite() {

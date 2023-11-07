@@ -26,4 +26,16 @@ public class UtilityServiceImpl implements UtilityService {
             return true;
         }
     }
+
+    @Override
+    @Transactional
+    public boolean isIndexingRun() {
+        Iterable<Site> siteList = siteRepository.findAll();
+        for (Site site : siteList) {
+            if (site.status.equals(Status.INDEXING)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

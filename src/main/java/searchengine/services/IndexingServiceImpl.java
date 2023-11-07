@@ -9,6 +9,9 @@ import searchengine.dto.indexing.IndexingResponse;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class IndexingServiceImpl implements IndexingService {
@@ -16,9 +19,11 @@ public class IndexingServiceImpl implements IndexingService {
     private final UtilityService utilityService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
+    private final List<SiteHandler> siteHandlerList = new ArrayList<>();
 
     @Override
     public IndexingResponse startIndexing() {
+
         for (Site site : sites.getSites()) {
             if (utilityService.isIndexingNow(site.getName())) {
                 return new IndexingResponse(false, "Индексация уже запущена");
@@ -30,9 +35,25 @@ public class IndexingServiceImpl implements IndexingService {
                     .url(site.getUrl())
                     .name(site.getName())
                     .build();
-            new Thread(new SiteHandler(dto)).start();
+
+            var handler = new SiteHandler(dto);
+            siteHandlerList.add(handler);
+
+            new Thread(handler).start();
         }
 
         return new IndexingResponse(true, null);
+    }
+
+    @Override
+    public IndexingResponse stopIndexing() {
+        if (utilityService.isIndexingRun()) {
+            for (SiteHandler handler : siteHandlerList) {
+                handler.stop();
+            }
+
+            return new IndexingResponse(true, null);
+        }
+        return new IndexingResponse(false, "Индексация не запущена");
     }
 }
