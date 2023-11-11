@@ -1,6 +1,5 @@
 package searchengine.services;
 
-import org.springframework.transaction.annotation.Transactional;
 import searchengine.constant.Constants;
 import searchengine.dto.RecursiveTaskDto;
 import searchengine.model.Site;

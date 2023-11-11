@@ -2,64 +2,70 @@ package searchengine.services.statistics;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import searchengine.config.Site;
-import searchengine.config.SitesList;
 import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
-import searchengine.services.statistics.StatisticsService;
+import searchengine.model.Site;
+import searchengine.model.Status;
+import searchengine.repositories.LemmaRepository;
+import searchengine.repositories.PageRepository;
+import searchengine.repositories.SiteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
-
-    private final Random random = new Random();
-    private final SitesList sites;
+    private final SiteRepository siteRepository;
+    private final PageRepository pageRepository;
+    private final LemmaRepository lemmaRepository;
 
     @Override
     public StatisticsResponse getStatistics() {
-        String[] statuses = { "INDEXED", "FAILED", "INDEXING" };
-        String[] errors = {
-                "Ошибка индексации: главная страница сайта не доступна",
-                "Ошибка индексации: сайт не доступен",
-                ""
-        };
-
-        TotalStatistics total = new TotalStatistics();
-        total.setSites(sites.getSites().size());
-        total.setIndexing(true);
-
-        List<DetailedStatisticsItem> detailed = new ArrayList<>();
-        List<Site> sitesList = sites.getSites();
-        for(int i = 0; i < sitesList.size(); i++) {
-            Site site = sitesList.get(i);
-            DetailedStatisticsItem item = new DetailedStatisticsItem();
-            item.setName(site.getName());
-            item.setUrl(site.getUrl());
-            int pages = random.nextInt(1_000);
-            int lemmas = pages * random.nextInt(1_000);
-            item.setPages(pages);
-            item.setLemmas(lemmas);
-            item.setStatus(statuses[i % 3]);
-            item.setError(errors[i % 3]);
-            item.setStatusTime(System.currentTimeMillis() -
-                    (random.nextInt(10_000)));
-            total.setPages(total.getPages() + pages);
-            total.setLemmas(total.getLemmas() + lemmas);
-            detailed.add(item);
-        }
-
         StatisticsResponse response = new StatisticsResponse();
         StatisticsData data = new StatisticsData();
-        data.setTotal(total);
-        data.setDetailed(detailed);
+        data.setTotal(getTotal());
+        data.setDetailed(getDetailed());
         response.setStatistics(data);
         response.setResult(true);
         return response;
+    }
+
+    private TotalStatistics getTotal() {
+        TotalStatistics total = new TotalStatistics();
+        total.setSites(siteRepository.count());
+        total.setPages(pageRepository.count());
+        total.setLemmas(lemmaRepository.count());
+        total.setIndexing(isIndexing());
+        return total;
+    }
+
+    private boolean isIndexing() {
+        List<Site> siteList = siteRepository.getAll();
+        return siteList.stream()
+                .anyMatch(site -> site.getStatus().equals(Status.INDEXING));
+    }
+
+    private List<DetailedStatisticsItem> getDetailed() {
+        List<DetailedStatisticsItem> detailedList = new ArrayList<>();
+
+        List<Site> siteList = siteRepository.getAll();
+        siteList.forEach(site -> {
+            DetailedStatisticsItem item = new DetailedStatisticsItem();
+            item.setUrl(site.getUrl());
+            item.setName(site.getName());
+            item.setStatus(site.getStatus().getName());
+            item.setStatusTime(site.getStatusTime().getTime());
+            item.setPages(site.getPageList().size());
+            item.setLemmas(site.getLemmaList().size());
+            if (site.getStatus().equals(Status.FAILED)) {
+                item.setError(site.getLastError());
+            }
+            detailedList.add(item);
+        });
+
+        return detailedList;
     }
 }
