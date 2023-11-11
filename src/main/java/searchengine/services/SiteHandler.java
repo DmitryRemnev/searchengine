@@ -1,6 +1,6 @@
 package searchengine.services;
 
-import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Transactional;
 import searchengine.constant.Constants;
 import searchengine.dto.RecursiveTaskDto;
 import searchengine.model.Site;
@@ -11,7 +11,6 @@ import java.util.Date;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
 
-@Configurable
 public class SiteHandler implements Runnable {
     private final SiteRepository siteRepository;
     private final String url;
@@ -33,10 +32,15 @@ public class SiteHandler implements Runnable {
             var siteRecursiveTask = new SiteRecursiveTask(pageHandler, paramDto);
             forkJoinPool.invoke(siteRecursiveTask);
             setIndexedStatus(site);
+            contentProcessing(site);
+
         } catch (CancellationException e) {
             setFailedStatus(site, Constants.CANCEL);
+            contentProcessing(site);
+
         } catch (Exception e) {
             setFailedStatus(site, e.getMessage());
+            contentProcessing(site);
         }
     }
 
@@ -72,5 +76,9 @@ public class SiteHandler implements Runnable {
         site.setStatus(Status.INDEXED);
         site.setStatusTime(new Date());
         siteRepository.save(site);
+    }
+
+    private void contentProcessing(Site site) {
+        dto.getContentService().contentProcessing(site);
     }
 }

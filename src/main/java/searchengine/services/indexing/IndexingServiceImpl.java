@@ -7,9 +7,12 @@ import searchengine.config.SitesList;
 import searchengine.constant.Constants;
 import searchengine.dto.RecursiveTaskDto;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.model.Page;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.SiteHandler;
+import searchengine.services.content.ContentService;
+import searchengine.services.single.PageSingleService;
 import searchengine.services.utility.UtilityService;
 
 import java.util.ArrayList;
@@ -22,6 +25,8 @@ public class IndexingServiceImpl implements IndexingService {
     private final UtilityService utilityService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
+    private final ContentService contentService;
+    private final PageSingleService pageSingleService;
     private final List<SiteHandler> siteHandlerList = new ArrayList<>();
 
     @Override
@@ -32,16 +37,9 @@ public class IndexingServiceImpl implements IndexingService {
                 return new IndexingResponse(false, Constants.ALREADY_LAUNCHED);
             }
 
-            RecursiveTaskDto dto = RecursiveTaskDto.builder()
-                    .siteRepository(siteRepository)
-                    .pageRepository(pageRepository)
-                    .url(site.getUrl())
-                    .name(site.getName())
-                    .build();
-
+            RecursiveTaskDto dto = createDto(site.getUrl(), site.getName());
             var handler = new SiteHandler(dto);
             siteHandlerList.add(handler);
-
             new Thread(handler).start();
         }
 
@@ -58,5 +56,24 @@ public class IndexingServiceImpl implements IndexingService {
             return new IndexingResponse(true, null);
         }
         return new IndexingResponse(false, Constants.NOT_RUNNING);
+    }
+
+    @Override
+    public IndexingResponse indexPage(String pageUrl) {
+        Page page = pageRepository.findByPath(pageUrl);
+        if (page == null) return new IndexingResponse(false, Constants.OUTSIDE);
+
+        pageSingleService.indexingSinglePage(page);
+        return new IndexingResponse(true, null);
+    }
+
+    private RecursiveTaskDto createDto(String url, String name) {
+        return RecursiveTaskDto.builder()
+                .siteRepository(siteRepository)
+                .pageRepository(pageRepository)
+                .url(url)
+                .name(name)
+                .contentService(contentService)
+                .build();
     }
 }

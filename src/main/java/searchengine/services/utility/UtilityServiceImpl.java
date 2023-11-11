@@ -18,13 +18,12 @@ public class UtilityServiceImpl implements UtilityService {
         Site site = siteRepository.findByName(name);
         if (site == null) return false;
 
-        if (site.status.equals(Status.INDEXED) || site.status.equals(Status.FAILED)) {
-            siteRepository.deleteByName(name);
-
+        if (site.getStatus().equals(Status.INDEXED) || site.getStatus().equals(Status.FAILED)) {
+            deleteAllData(name);
             return false;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     @Override
@@ -32,10 +31,14 @@ public class UtilityServiceImpl implements UtilityService {
     public boolean isIndexingRun() {
         Iterable<Site> siteList = siteRepository.findAll();
         for (Site site : siteList) {
-            if (site.status.equals(Status.INDEXING)) {
+            if (site.getStatus().equals(Status.INDEXING)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private void deleteAllData(String name) {
+        siteRepository.deleteByName(name);
     }
 }

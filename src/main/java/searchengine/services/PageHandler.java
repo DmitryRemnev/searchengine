@@ -30,7 +30,7 @@ public class PageHandler {
         return urls;
     }
 
-    private void addToDataBase(RecursiveTaskDto dto) {
+    public void addToDataBase(RecursiveTaskDto dto) {
         try {
             connect = Jsoup.connect(url)
                     .maxBodySize(0)

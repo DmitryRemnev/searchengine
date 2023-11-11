@@ -18,24 +18,27 @@ public class Site {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "INT", name = "id")
-    public Integer id;
+    private Integer id;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "ENUM('INDEXING', 'INDEXED', 'FAILED')", nullable = false, name = "status")
-    public Status status;
+    private Status status;
 
     @Column(columnDefinition = "DATETIME", nullable = false, name = "status_time")
-    public Date statusTime;
+    private Date statusTime;
 
     @Column(columnDefinition = "TEXT", name = "last_error")
-    public String lastError;
+    private String lastError;
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false, name = "url")
-    public String url;
+    private String url;
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false, name = "name")
-    public String name;
+    private String name;
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    public Set<Page> pageList = new HashSet<>();
+    @OneToMany(mappedBy = "site", cascade = CascadeType.REMOVE)
+    private Set<Page> pageList = new HashSet<>();
+
+    @OneToMany(mappedBy = "site", cascade = CascadeType.REMOVE)
+    private Set<Lemma> lemmaList = new HashSet<>();
 }
