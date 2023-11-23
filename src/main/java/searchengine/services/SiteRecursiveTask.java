@@ -1,23 +1,23 @@
 package searchengine.services;
 
 import searchengine.constant.Constants;
-import searchengine.dto.RecursiveTaskDto;
+import searchengine.dto.IndexingParamDto;
 
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
 
 public class SiteRecursiveTask extends RecursiveAction {
-    private final RecursiveTaskDto dto;
+    private final IndexingParamDto dto;
     private final PageHandler pageHandler;
     private final Set<String> allUrls;
 
-    public SiteRecursiveTask(PageHandler pageHandler, RecursiveTaskDto dto) {
+    public SiteRecursiveTask(PageHandler pageHandler, IndexingParamDto dto) {
         this.pageHandler = pageHandler;
         this.dto = dto;
         allUrls = Collections.synchronizedSet(new HashSet<>());
     }
 
-    public SiteRecursiveTask(PageHandler pageHandler, Set<String> allUrls, RecursiveTaskDto dto) {
+    public SiteRecursiveTask(PageHandler pageHandler, Set<String> allUrls, IndexingParamDto dto) {
         this.pageHandler = pageHandler;
         this.allUrls = allUrls;
         this.dto = dto;
@@ -48,6 +48,6 @@ public class SiteRecursiveTask extends RecursiveAction {
     }
 
     private boolean isNotAdd(String url, Set<String> allUrls) {
-        return allUrls.contains(url) || url.matches(Constants.REG_TYPES_FILES);
+        return url.matches(Constants.REG_TYPES_FILES) || url.endsWith("#") || allUrls.contains(url);
     }
 }

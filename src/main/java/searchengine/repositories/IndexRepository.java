@@ -8,4 +8,5 @@ import searchengine.model.Page;
 
 @Repository
 public interface IndexRepository extends CrudRepository<Index, Integer> {
+    Index findByPageAndLemma(Page page, Lemma lemma);
 }

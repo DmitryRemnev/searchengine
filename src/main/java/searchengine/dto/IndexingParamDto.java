@@ -9,7 +9,7 @@ import searchengine.services.content.ContentService;
 
 @Data
 @Builder
-public class RecursiveTaskDto {
+public class IndexingParamDto {
     SiteRepository siteRepository;
     PageRepository pageRepository;
     String url;

@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class LemmaServiceImpl implements LemmaService {
+    private static final String WORD_TYPE_REGEX = "\\W\\w&&[^а-яА-Я\\s]";
     private static final String[] PARTICLES_NAMES = new String[]{"МЕЖД", "ПРЕДЛ", "СОЮЗ"};
     private final LuceneMorphology luceneMorphology;
 
@@ -47,6 +45,22 @@ public class LemmaServiceImpl implements LemmaService {
         return lemmas;
     }
 
+    @Override
+    public Set<String> getLemmaSet(String text) {
+        String[] textArray = arrayContainsRussianWords(text);
+        Set<String> lemmaSet = new HashSet<>();
+        for (String word : textArray) {
+            if (!word.isEmpty() && isCorrectWordForm(word)) {
+                List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
+                if (anyWordBaseBelongToParticle(wordBaseForms)) {
+                    continue;
+                }
+                lemmaSet.addAll(luceneMorphology.getNormalForms(word));
+            }
+        }
+        return lemmaSet;
+    }
+
     private String[] arrayContainsRussianWords(String text) {
         return text.toLowerCase(Locale.ROOT)
                 .replaceAll("([^а-я\\s])", " ")
@@ -65,5 +79,15 @@ public class LemmaServiceImpl implements LemmaService {
             }
         }
         return false;
+    }
+
+    private boolean isCorrectWordForm(String word) {
+        List<String> wordInfo = luceneMorphology.getMorphInfo(word);
+        for (String morphInfo : wordInfo) {
+            if (morphInfo.matches(WORD_TYPE_REGEX)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

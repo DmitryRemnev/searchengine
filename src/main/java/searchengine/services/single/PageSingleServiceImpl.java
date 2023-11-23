@@ -3,7 +3,7 @@ package searchengine.services.single;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import searchengine.dto.RecursiveTaskDto;
+import searchengine.dto.IndexingParamDto;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
@@ -33,15 +33,15 @@ public class PageSingleServiceImpl implements PageSingleService {
     @Override
     @Transactional
     public void indexingSinglePage(Page page) {
-        RecursiveTaskDto dto = createDto(page);
+        IndexingParamDto dto = createDto(page);
         deletePageData(page);
         var pageHandler = new PageHandler(dto, dto.getUrl());
         pageHandler.addToDataBase(dto);
         contentProcessing(dto);
     }
 
-    private RecursiveTaskDto createDto(Page page) {
-        return RecursiveTaskDto.builder()
+    private IndexingParamDto createDto(Page page) {
+        return IndexingParamDto.builder()
                 .url(page.getPath())
                 .site(page.getSite())
                 .siteRepository(siteRepository)
@@ -68,7 +68,7 @@ public class PageSingleServiceImpl implements PageSingleService {
         pageRepository.delete(page);
     }
 
-    private void contentProcessing(RecursiveTaskDto dto) {
+    private void contentProcessing(IndexingParamDto dto) {
         Page page = pageRepository.findByPath(dto.getUrl());
         Site site = page.getSite();
         Map<String, Integer> map = lemmaService.collectLemmas(page.getContent());

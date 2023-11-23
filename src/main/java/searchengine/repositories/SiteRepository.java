@@ -15,4 +15,6 @@ public interface SiteRepository extends CrudRepository<Site, Integer> {
 
     @Query("SELECT s FROM site s")
     List<Site> getAll();
+
+    Site findByUrl(String url);
 }

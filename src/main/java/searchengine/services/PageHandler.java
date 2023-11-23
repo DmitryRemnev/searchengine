@@ -5,7 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import searchengine.constant.Constants;
-import searchengine.dto.RecursiveTaskDto;
+import searchengine.dto.IndexingParamDto;
 import searchengine.model.Page;
 import searchengine.model.Site;
 
@@ -15,12 +15,12 @@ import java.util.List;
 
 public class PageHandler {
     private final String url;
-    private final RecursiveTaskDto dto;
+    private final IndexingParamDto dto;
     private final List<String> urls = new ArrayList<>();
     private Document document;
     private Connection connect;
 
-    public PageHandler(RecursiveTaskDto dto, String url) {
+    public PageHandler(IndexingParamDto dto, String url) {
         this.url = url;
         this.dto = dto;
     }
@@ -30,7 +30,7 @@ public class PageHandler {
         return urls;
     }
 
-    public void addToDataBase(RecursiveTaskDto dto) {
+    public void addToDataBase(IndexingParamDto dto) {
         try {
             connect = Jsoup.connect(url)
                     .maxBodySize(0)
@@ -48,7 +48,7 @@ public class PageHandler {
         }
     }
 
-    private void addLine(RecursiveTaskDto dto) {
+    private void addLine(IndexingParamDto dto) {
         var page = new Page();
         page.setSite(dto.getSite());
         page.setPath(url);
@@ -57,7 +57,7 @@ public class PageHandler {
         dto.getPageRepository().save(page);
     }
 
-    private void updateTime(RecursiveTaskDto dto) {
+    private void updateTime(IndexingParamDto dto) {
         Site site = dto.getSite();
         site.setStatusTime(new Date());
         dto.getSiteRepository().save(site);
@@ -75,6 +75,6 @@ public class PageHandler {
     }
 
     private boolean isAdd(String link) {
-        return link.contains(url) && !link.equals(url);
+        return link.contains(url) && !link.equals(url) && !link.endsWith("#");
     }
 }

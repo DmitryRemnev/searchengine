@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.constant.Constants;
-import searchengine.dto.RecursiveTaskDto;
+import searchengine.dto.IndexingParamDto;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.model.Page;
 import searchengine.repositories.PageRepository;
@@ -37,7 +37,7 @@ public class IndexingServiceImpl implements IndexingService {
                 return new IndexingResponse(false, Constants.ALREADY_LAUNCHED);
             }
 
-            RecursiveTaskDto dto = createDto(site.getUrl(), site.getName());
+            IndexingParamDto dto = createDto(site.getUrl(), site.getName());
             var handler = new SiteHandler(dto);
             siteHandlerList.add(handler);
             new Thread(handler).start();
@@ -67,8 +67,8 @@ public class IndexingServiceImpl implements IndexingService {
         return new IndexingResponse(true, null);
     }
 
-    private RecursiveTaskDto createDto(String url, String name) {
-        return RecursiveTaskDto.builder()
+    private IndexingParamDto createDto(String url, String name) {
+        return IndexingParamDto.builder()
                 .siteRepository(siteRepository)
                 .pageRepository(pageRepository)
                 .url(url)
