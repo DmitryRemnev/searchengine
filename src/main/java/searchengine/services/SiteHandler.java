@@ -24,6 +24,8 @@ public class SiteHandler implements Runnable {
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
+
         Site site = createSite();
         try {
             IndexingParamDto paramDto = createDto(site);
@@ -32,6 +34,9 @@ public class SiteHandler implements Runnable {
             forkJoinPool.invoke(siteRecursiveTask);
             setIndexedStatus(site);
             contentProcessing(site);
+
+            long end = System.currentTimeMillis();
+            System.out.println(Thread.currentThread().getName() + " : " + (end - start) + " mill");
 
         } catch (CancellationException e) {
             setFailedStatus(site, Constants.CANCEL);

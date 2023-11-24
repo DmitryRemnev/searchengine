@@ -11,6 +11,7 @@ import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.services.lemma.LemmaService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,15 +26,23 @@ public class ContentServiceImpl implements ContentService {
     @Override
     public void contentProcessing(Site site) {
         List<Page> pageList = pageRepository.getOkContent(site);
+        List<Index> indexList = new ArrayList<>();
+
         for (Page page : pageList) {
             String content = page.getContent();
             Map<String, Integer> map = lemmaService.collectLemmas(content);
-            map.forEach((key, value) -> save(site, page, key, value));
+
+            for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                Lemma lemma = createOrUpdateLemma(site, entry.getKey());
+                Index index = createIndex(page, lemma, entry.getValue());
+                indexList.add(index);
+            }
         }
+
+        indexRepository.saveAll(indexList);
     }
 
-    @Override
-    public void save(Site site, Page page, String lemmaString, Integer rating) {
+    private Lemma createOrUpdateLemma(Site site, String lemmaString) {
         Lemma lemmaEntity = lemmaRepository.findByLemma(lemmaString);
         if (lemmaEntity != null) {
             lemmaEntity.setFrequency(lemmaEntity.getFrequency() + 1);
@@ -43,12 +52,14 @@ public class ContentServiceImpl implements ContentService {
             lemmaEntity.setLemma(lemmaString);
             lemmaEntity.setFrequency(1);
         }
-        lemmaEntity = lemmaRepository.save(lemmaEntity);
+        return lemmaRepository.save(lemmaEntity);
+    }
 
+    private Index createIndex(Page page, Lemma lemma, Integer rating) {
         Index index = new Index();
         index.setPage(page);
-        index.setLemma(lemmaEntity);
+        index.setLemma(lemma);
         index.setRating(Float.valueOf(rating));
-        indexRepository.save(index);
+        return index;
     }
 }

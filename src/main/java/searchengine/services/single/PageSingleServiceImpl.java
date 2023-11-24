@@ -13,7 +13,6 @@ import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.PageHandler;
-import searchengine.services.content.ContentService;
 import searchengine.services.lemma.LemmaService;
 
 import java.util.List;
@@ -28,7 +27,6 @@ public class PageSingleServiceImpl implements PageSingleService {
     private final IndexRepository indexRepository;
     private final LemmaRepository lemmaRepository;
     private final LemmaService lemmaService;
-    private final ContentService contentService;
 
     @Override
     @Transactional
@@ -72,6 +70,25 @@ public class PageSingleServiceImpl implements PageSingleService {
         Page page = pageRepository.findByPath(dto.getUrl());
         Site site = page.getSite();
         Map<String, Integer> map = lemmaService.collectLemmas(page.getContent());
-        map.forEach((key, value) -> contentService.save(site, page, key, value));
+        map.forEach((key, value) -> save(site, page, key, value));
+    }
+
+    private void save(Site site, Page page, String lemmaString, Integer rating) {
+        Lemma lemmaEntity = lemmaRepository.findByLemma(lemmaString);
+        if (lemmaEntity != null) {
+            lemmaEntity.setFrequency(lemmaEntity.getFrequency() + 1);
+        } else {
+            lemmaEntity = new Lemma();
+            lemmaEntity.setSite(site);
+            lemmaEntity.setLemma(lemmaString);
+            lemmaEntity.setFrequency(1);
+        }
+        lemmaEntity = lemmaRepository.save(lemmaEntity);
+
+        Index index = new Index();
+        index.setPage(page);
+        index.setLemma(lemmaEntity);
+        index.setRating(Float.valueOf(rating));
+        indexRepository.save(index);
     }
 }
