@@ -30,12 +30,11 @@ public class PageSingleServiceImpl implements PageSingleService {
 
     @Override
     @Transactional
-    public void indexingSinglePage(Page page) {
-        IndexingParamDto dto = createDto(page);
-        deletePageData(page);
-        var pageHandler = new PageHandler(dto, dto.getUrl());
-        pageHandler.addToDataBase(dto);
-        contentProcessing(dto);
+    public void indexingSinglePage(Page oldPpage) {
+        IndexingParamDto dto = createDto(oldPpage);
+        deletePldPageData(oldPpage);
+        Page newPage = createNewPage(dto);
+        contentProcessing(newPage);
     }
 
     private IndexingParamDto createDto(Page page) {
@@ -47,7 +46,7 @@ public class PageSingleServiceImpl implements PageSingleService {
                 .build();
     }
 
-    private void deletePageData(Page page) {
+    private void deletePldPageData(Page page) {
         Set<Index> indexSet = page.getIndexSet();
         List<Lemma> lemmaList = indexSet.stream()
                 .map(Index::getLemma)
@@ -66,8 +65,14 @@ public class PageSingleServiceImpl implements PageSingleService {
         pageRepository.delete(page);
     }
 
-    private void contentProcessing(IndexingParamDto dto) {
-        Page page = pageRepository.findByPath(dto.getUrl());
+    private Page createNewPage(IndexingParamDto dto) {
+        var pageHandler = new PageHandler(dto, dto.getUrl());
+        pageHandler.parsingUrl();
+        var newPage = pageHandler.createPage(dto);
+        return pageRepository.save(newPage);
+    }
+
+    private void contentProcessing(Page page) {
         Site site = page.getSite();
         Map<String, Integer> map = lemmaService.collectLemmas(page.getContent());
         map.forEach((key, value) -> save(site, page, key, value));

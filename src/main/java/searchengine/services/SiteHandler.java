@@ -3,22 +3,28 @@ package searchengine.services;
 import lombok.extern.slf4j.Slf4j;
 import searchengine.constant.Constants;
 import searchengine.dto.IndexingParamDto;
+import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.model.Status;
+import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
 
 @Slf4j
 public class SiteHandler implements Runnable {
     private final SiteRepository siteRepository;
+    private final PageRepository pageRepository;
     private final String url;
     private final IndexingParamDto dto;
     private final ForkJoinPool forkJoinPool = new ForkJoinPool();
+
     public SiteHandler(IndexingParamDto dto) {
         this.siteRepository = dto.getSiteRepository();
+        this.pageRepository = dto.getPageRepository();
         this.url = dto.getUrl();
         this.dto = dto;
     }
@@ -32,16 +38,15 @@ public class SiteHandler implements Runnable {
             IndexingParamDto paramDto = createDto(site);
             var pageHandler = new PageHandler(paramDto, url);
             var siteRecursiveTask = new SiteRecursiveTask(pageHandler, paramDto);
-            forkJoinPool.invoke(siteRecursiveTask);
+            List<Page> pageList = forkJoinPool.invoke(siteRecursiveTask);
+            pageRepository.saveAll(pageList);
             contentProcessing(site);
             setIndexedStatus(site);
 
         } catch (CancellationException e) {
-            contentProcessing(site);
             setFailedStatus(site, Constants.CANCEL);
 
         } catch (Exception e) {
-            contentProcessing(site);
             setFailedStatus(site, e.getMessage());
         }
 

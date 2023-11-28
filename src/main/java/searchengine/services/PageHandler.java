@@ -6,17 +6,16 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import searchengine.constant.Constants;
 import searchengine.dto.IndexingParamDto;
+import searchengine.dto.RecursiveDataDto;
 import searchengine.model.Page;
-import searchengine.model.Site;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class PageHandler {
     private final String url;
     private final IndexingParamDto dto;
-    private final List<String> urls = new ArrayList<>();
+    private final List<String> urlList = new ArrayList<>();
     private Document document;
     private Connection connect;
 
@@ -25,13 +24,16 @@ public class PageHandler {
         this.dto = dto;
     }
 
-    public List<String> extractUrls() {
-        addToDataBase(dto);
-        sortElement();
-        return urls;
+    public RecursiveDataDto extractRecursiveData() {
+        parsingUrl();
+        fillingUrlList();
+        return RecursiveDataDto.builder()
+                .page(createPage(dto))
+                .urlList(urlList)
+                .build();
     }
 
-    public void addToDataBase(IndexingParamDto dto) {
+    public void parsingUrl() {
         try {
             connect = Jsoup.connect(url)
                     .maxBodySize(0)
@@ -40,41 +42,32 @@ public class PageHandler {
                     .ignoreHttpErrors(true);
             document = connect.ignoreContentType(true).get();
 
-            addLine(dto);
-            updateTime(dto);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void addLine(IndexingParamDto dto) {
-        var page = new Page();
-        page.setSite(dto.getSite());
-        page.setPath(url);
-        page.setCode(connect.response().statusCode());
-        page.setContent(document.html());
-        dto.getPageRepository().save(page);
-    }
-
-    private void updateTime(IndexingParamDto dto) {
-        Site site = dto.getSite();
-        site.setStatusTime(new Date());
-        dto.getSiteRepository().save(site);
-    }
-
-    private void sortElement() {
+    private void fillingUrlList() {
         Elements elements = document.select(Constants.CSS_QUERY);
         elements.forEach(element -> {
             String link = element.attr(Constants.ATTRIBUTE_KEY);
 
             if (isAdd(link)) {
-                urls.add(link);
+                urlList.add(link);
             }
         });
     }
 
+    public Page createPage(IndexingParamDto dto) {
+        var page = new Page();
+        page.setSite(dto.getSite());
+        page.setPath(url);
+        page.setCode(connect.response().statusCode());
+        page.setContent(document.html());
+        return page;
+    }
+
     private boolean isAdd(String link) {
-        return link.contains(url) && !link.equals(url) && !link.endsWith("#");
+        return link.contains(url) && !link.equals(url);
     }
 }
