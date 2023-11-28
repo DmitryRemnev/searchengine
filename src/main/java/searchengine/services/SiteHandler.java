@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import lombok.extern.slf4j.Slf4j;
 import searchengine.constant.Constants;
 import searchengine.dto.IndexingParamDto;
 import searchengine.model.Site;
@@ -10,12 +11,12 @@ import java.util.Date;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
 
+@Slf4j
 public class SiteHandler implements Runnable {
     private final SiteRepository siteRepository;
     private final String url;
     private final IndexingParamDto dto;
     private final ForkJoinPool forkJoinPool = new ForkJoinPool();
-
     public SiteHandler(IndexingParamDto dto) {
         this.siteRepository = dto.getSiteRepository();
         this.url = dto.getUrl();
@@ -32,20 +33,20 @@ public class SiteHandler implements Runnable {
             var pageHandler = new PageHandler(paramDto, url);
             var siteRecursiveTask = new SiteRecursiveTask(pageHandler, paramDto);
             forkJoinPool.invoke(siteRecursiveTask);
-            setIndexedStatus(site);
             contentProcessing(site);
-
-            long end = System.currentTimeMillis();
-            System.out.println(Thread.currentThread().getName() + " : " + (end - start) + " mill");
+            setIndexedStatus(site);
 
         } catch (CancellationException e) {
-            setFailedStatus(site, Constants.CANCEL);
             contentProcessing(site);
+            setFailedStatus(site, Constants.CANCEL);
 
         } catch (Exception e) {
-            setFailedStatus(site, e.getMessage());
             contentProcessing(site);
+            setFailedStatus(site, e.getMessage());
         }
+
+        long end = System.currentTimeMillis();
+        log.info(dto.getName() + " : " + (end - start) + " mill");
     }
 
     public void stop() {

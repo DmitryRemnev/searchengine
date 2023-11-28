@@ -25,8 +25,9 @@ public class PageHandler {
         this.dto = dto;
     }
 
-    public List<String> getUrls() {
+    public List<String> extractUrls() {
         addToDataBase(dto);
+        sortElement();
         return urls;
     }
 
@@ -41,7 +42,6 @@ public class PageHandler {
 
             addLine(dto);
             updateTime(dto);
-            sortElement();
 
         } catch (Exception e) {
             e.printStackTrace();

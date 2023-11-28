@@ -2,6 +2,8 @@ indexing-settings:
   sites:
     - url: http://srpp63.ru/
       name: САМАРСКОЕ РЕЧНОЕ ПАССАЖИРСКОЕ ПРЕДПРИЯТИЕ
+    - url: https://radiomv.ru/
+      name: Радио Милицейская волна
 
 server:
   port: 8080
@@ -18,3 +20,6 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+logging:
+  file.name: C:\Logs\logfile.log

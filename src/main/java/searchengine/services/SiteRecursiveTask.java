@@ -27,7 +27,7 @@ public class SiteRecursiveTask extends RecursiveAction {
     protected void compute() {
         List<SiteRecursiveTask> taskList = new ArrayList<>();
 
-        for (String url : pageHandler.getUrls()) {
+        for (String url : pageHandler.extractUrls()) {
 
             synchronized (allUrls) {
                 if (isNotAdd(url, allUrls)) {
