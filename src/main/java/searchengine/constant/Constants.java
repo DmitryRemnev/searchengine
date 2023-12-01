@@ -10,4 +10,6 @@ public final class Constants {
     public static final String REFERRER = "http://www.google.com";
     public static final String CSS_QUERY = "a[href]";
     public static final String ATTRIBUTE_KEY = "abs:href";
+    public static final String EMPTY_QUERY = "Задан пустой поисковый запрос";
+    public static final String NOT_FOUND_LEMMA = "Не найдено ни одной леммы";
 }

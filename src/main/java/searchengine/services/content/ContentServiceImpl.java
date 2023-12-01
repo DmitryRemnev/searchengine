@@ -43,7 +43,7 @@ public class ContentServiceImpl implements ContentService {
     }
 
     private Lemma createOrUpdateLemma(Site site, String lemmaString) {
-        Lemma lemmaEntity = lemmaRepository.findByLemma(lemmaString);
+        Lemma lemmaEntity = lemmaRepository.findByLemmaAndSite(lemmaString, site);
         if (lemmaEntity != null) {
             lemmaEntity.setFrequency(lemmaEntity.getFrequency() + 1);
         } else {

@@ -93,7 +93,7 @@ public class SearchItemServiceImpl implements SearchItemService {
                 .toList();
 
         for (String sentence : sentences) {
-            if (sentence.contains(query)) {
+            if (sentence.toLowerCase().contains(query.toLowerCase())) {
                 return markQuery(sentence, query);
             }
         }

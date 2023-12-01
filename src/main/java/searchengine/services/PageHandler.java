@@ -61,10 +61,14 @@ public class PageHandler {
     public Page createPage(IndexingParamDto dto) {
         var page = new Page();
         page.setSite(dto.getSite());
-        page.setPath(url);
+        page.setPath(extractPath(dto.getSite().getUrl()));
         page.setCode(connect.response().statusCode());
         page.setContent(document.html());
         return page;
+    }
+
+    private String extractPath(String siteUrl) {
+        return url.replace(siteUrl, "");
     }
 
     private boolean isAdd(String link) {

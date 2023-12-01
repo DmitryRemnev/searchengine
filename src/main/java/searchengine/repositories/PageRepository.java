@@ -16,9 +16,6 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
 
     Page findByPath(String path);
 
-    @Query("SELECT p FROM page p INNER JOIN p.indexSet i INNER JOIN i.lemma l WHERE l = :lemma")
-    List<Page> getByTheRarestLemma(Lemma lemma);
-
-    @Query("SELECT p FROM page p INNER JOIN p.indexSet i INNER JOIN i.lemma l WHERE l = :lemma AND l.site = :site")
+    @Query("SELECT p FROM page p INNER JOIN p.indexSet i INNER JOIN i.lemma l WHERE l = :lemma AND p.site = :site")
     List<Page> getByTheRarestLemmaAndSite(Lemma lemma, Site site);
 }

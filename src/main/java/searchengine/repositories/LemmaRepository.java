@@ -12,11 +12,8 @@ import java.util.Set;
 @Repository
 public interface LemmaRepository extends CrudRepository<Lemma, Integer> {
 
-    Lemma findByLemma(String lemma);
+    Lemma findByLemmaAndSite(String lemma, Site site);
 
-    @Query("SELECT l FROM lemma l WHERE l.lemma IN :lemmaSet AND l.frequency < 60 ORDER BY l.frequency")
-    List<Lemma> getOrderingLemmaList(Set<String> lemmaSet);
-
-    @Query("SELECT l FROM lemma l WHERE l.site = :site AND l.lemma IN :lemmaSet AND l.frequency < 60 ORDER BY l.frequency")
-    List<Lemma> getOrderingLemmaListBySite(Set<String> lemmaSet, Site site);
+    @Query("SELECT l FROM lemma l WHERE l.lemma IN :lemmaSet AND l.frequency < 100")
+    List<Lemma> findLemmaList(Set<String> lemmaSet);
 }

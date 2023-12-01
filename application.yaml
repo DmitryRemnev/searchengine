@@ -1,9 +1,9 @@
 indexing-settings:
   sites:
     - url: http://srpp63.ru/
-      name: САМАРСКОЕ РЕЧНОЕ ПАССАЖИРСКОЕ ПРЕДПРИЯТИЕ
-    - url: https://radiomv.ru/
-      name: Радио Милицейская волна
+      name: Самарское Речное Пассажирское Предприятие
+    - url: http://www.playback.ru/
+      name: Смартфоны
 
 server:
   port: 8080
