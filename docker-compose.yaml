@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/search_engine?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
+    networks:
+      - spring-mysql
+  db:
+    image: mysql:8.0
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - spring-mysql
+volumes:
+  db-data:
+networks:
+  spring-mysql:
