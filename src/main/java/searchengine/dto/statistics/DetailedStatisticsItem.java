@@ -10,5 +10,5 @@ public class DetailedStatisticsItem {
     private long statusTime;
     private String error;
     private int pages;
-    private int lemmas;
+    private long lemmas;
 }

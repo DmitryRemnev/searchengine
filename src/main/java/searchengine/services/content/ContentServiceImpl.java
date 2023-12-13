@@ -45,7 +45,6 @@ public class ContentServiceImpl implements ContentService {
                     lemmaIntegerMap.put(lemma, 1);
                 }
 
-//                Lemma lemma = createOrUpdateLemma(site, entry.getKey());
                 Index index = createIndex(page, lemma, entry.getValue());
                 indexList.add(index);
             }
@@ -65,19 +64,6 @@ public class ContentServiceImpl implements ContentService {
         lemma.setSite(site);
         lemma.setLemma(lemmaString);
         return lemma;
-    }
-
-    private Lemma createOrUpdateLemma(Site site, String lemmaString) {
-        Lemma lemmaEntity = lemmaRepository.findByLemmaAndSite(lemmaString, site);
-        if (lemmaEntity != null) {
-            lemmaEntity.setFrequency(lemmaEntity.getFrequency() + 1);
-        } else {
-            lemmaEntity = new Lemma();
-            lemmaEntity.setSite(site);
-            lemmaEntity.setLemma(lemmaString);
-            lemmaEntity.setFrequency(1);
-        }
-        return lemmaRepository.save(lemmaEntity);
     }
 
     private Index createIndex(Page page, Lemma lemma, Integer rating) {

@@ -16,4 +16,7 @@ public interface LemmaRepository extends CrudRepository<Lemma, Integer> {
 
     @Query("SELECT l FROM lemma l WHERE l.lemma IN :lemmaSet AND l.frequency < 100")
     List<Lemma> findLemmaList(Set<String> lemmaSet);
+
+    @Query("SELECT COUNT(l) FROM lemma l WHERE l.site = :site")
+    long countBySite(Site site);
 }
