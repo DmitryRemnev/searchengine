@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class SiteHandler implements Runnable {
@@ -31,7 +32,7 @@ public class SiteHandler implements Runnable {
 
     @Override
     public void run() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         Site site = createSite();
         try {
@@ -50,8 +51,8 @@ public class SiteHandler implements Runnable {
             setFailedStatus(site, e.getMessage());
         }
 
-        long end = System.currentTimeMillis();
-        log.info(dto.getName() + " : " + (end - start) + " mill");
+        long estimatedTime = System.nanoTime() - start;
+        log.info(TimeUnit.MILLISECONDS.convert(estimatedTime, TimeUnit.NANOSECONDS) + " mill");
     }
 
     public void stop() {
