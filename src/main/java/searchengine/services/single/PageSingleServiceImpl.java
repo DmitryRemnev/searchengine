@@ -39,7 +39,7 @@ public class PageSingleServiceImpl implements PageSingleService {
 
     private IndexingParamDto createDto(Page page) {
         return IndexingParamDto.builder()
-                .url(page.getPath())
+                .url(page.getSite().getUrl() + page.getPath())
                 .site(page.getSite())
                 .siteRepository(siteRepository)
                 .pageRepository(pageRepository)

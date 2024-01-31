@@ -1,9 +1,9 @@
 indexing-settings:
   sites:
-    - url: http://srpp63.ru/
-      name: Самарское Речное Пассажирское Предприятие
     - url: http://www.playback.ru/
-      name: Смартфоны
+      name: магазин
+    - url: https://www.svetlovka.ru/
+      name: библиотека
 
 server:
   port: 8080

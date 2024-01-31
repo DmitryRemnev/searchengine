@@ -53,9 +53,9 @@ public class SearchServiceImpl implements SearchService {
         for (Map.Entry<Site, List<Lemma>> entry : siteListMap.entrySet()) {
 
             List<Lemma> lemmas = entry.getValue();
-            if (lemmas.size() < countQueryWords) {
+            /*if (lemmas.size() < countQueryWords) {
                 continue;
-            }
+            }*/
 
             lemmas.sort(Comparator.comparing(Lemma::getFrequency));
             Lemma rarestLemma = lemmas.get(0);
