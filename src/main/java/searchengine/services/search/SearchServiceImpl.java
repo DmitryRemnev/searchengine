@@ -45,7 +45,6 @@ public class SearchServiceImpl implements SearchService {
             Site site = siteRepository.findByUrl(url);
             filteringLemmasBySite(lemmaList, site);
         }
-        long countQueryWords = countingQueryWords(query);
 
         List<SearchItemDto> itemDtoList = new ArrayList<>();
 
@@ -53,9 +52,6 @@ public class SearchServiceImpl implements SearchService {
         for (Map.Entry<Site, List<Lemma>> entry : siteListMap.entrySet()) {
 
             List<Lemma> lemmas = entry.getValue();
-            /*if (lemmas.size() < countQueryWords) {
-                continue;
-            }*/
 
             lemmas.sort(Comparator.comparing(Lemma::getFrequency));
             Lemma rarestLemma = lemmas.get(0);
@@ -75,12 +71,7 @@ public class SearchServiceImpl implements SearchService {
         lemmaList.removeIf(lemma -> !lemma.getSite().equals(site));
     }
 
-    private long countingQueryWords(String query) {
-        return Arrays.stream(query.split("\\s")).count();
-    }
-
     private void filteringPages(List<Lemma> lemmaList, List<Page> pageList) {
-        lemmaList.remove(0); // Remove the first lemma from the list, since filtering by it does not make sense
 
         for (Lemma lemma : lemmaList) {
             for (Iterator<Page> pageIterator = pageList.iterator(); pageIterator.hasNext(); ) {

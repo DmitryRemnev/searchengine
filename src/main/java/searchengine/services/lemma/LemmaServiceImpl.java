@@ -23,6 +23,10 @@ public class LemmaServiceImpl implements LemmaService {
                 continue;
             }
 
+            if (word.length() < 3) {
+                continue;
+            }
+
             List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
             if (anyWordBaseBelongToParticle(wordBaseForms)) {
                 continue;
