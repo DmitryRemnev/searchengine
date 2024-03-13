@@ -21,14 +21,14 @@ public class SearchSnippetServiceImpl implements SearchSnippetService {
     public String createSnippet(Page page, String query, List<Lemma> lemmaList) {
         Elements elements = extractElements(page);
         List<String> queryListWords = createQueryListWords(query);
-        StringBuilder snippet = new StringBuilder();
         List<String> resultList = new ArrayList<>();
         String result;
 
         for (String queryWord : queryListWords) {
+            String halfWord = getHalfWord(queryWord.toLowerCase());
 
             for (Element element : elements) {
-                result = findSnippet(element, queryWord, lemmaList);
+                result = findSnippet(element, halfWord, lemmaList);
 
                 if (result != null) {
                     resultList.add(result);
@@ -37,16 +37,11 @@ public class SearchSnippetServiceImpl implements SearchSnippetService {
             }
         }
 
-        if (resultList.size() != queryListWords.size()) {
+        if (resultList.isEmpty() || resultList.size() != queryListWords.size()) {
             return null;
         }
 
-        for (String string : resultList) {
-            snippet.append(string);
-            snippet.append(" ");
-        }
-
-        return !snippet.toString().isBlank() ? snippet.toString().trim() : null;
+        return concatResultList(resultList);
     }
 
     private Elements extractElements(Page page) {
@@ -59,14 +54,12 @@ public class SearchSnippetServiceImpl implements SearchSnippetService {
         return Arrays.stream(query.split("\\s")).toList();
     }
 
-    private String findSnippet(Element element, String queryWord, List<Lemma> lemmaList) {
-
+    private String findSnippet(Element element, String halfWord, List<Lemma> lemmaList) {
         if (element.hasText()) {
             String text = element.text();
 
-            String halfWord = getHalfWord(queryWord.toLowerCase());
             if (isPartialMatch(halfWord, text.toLowerCase())) {
-                return findByPartialMatch(halfWord, text.toLowerCase(), lemmaList);
+                return findMatch(halfWord, text.toLowerCase(), lemmaList);
             }
         }
 
@@ -102,37 +95,16 @@ public class SearchSnippetServiceImpl implements SearchSnippetService {
         return (text.contains(halfWord));
     }
 
-    private String findByPartialMatch(String halfWord, String text, List<Lemma> lemmaList) {
+    private String findMatch(String halfWord, String text, List<Lemma> lemmaList) {
         List<String> sentences = divideByFiveWords(text);
 
         for (String sentence : sentences) {
             if (sentence.toLowerCase().contains(halfWord)) {
                 List<String> words = Arrays.stream(sentence.split(" ")).toList();
 
-                String searchWord = null;
-                for (String word : words) {
-
-                    if (word.contains(halfWord)) {
-                        if (isLemmaPresent(lemmaList, lemmaService.getLemmaSet(word))) {
-                            searchWord = word;
-                        }
-                    }
-                }
-
+                String searchWord = findWord(words, halfWord, lemmaList);
                 if (searchWord != null) {
-                    StringBuilder builder = new StringBuilder();
-
-                    for (String word : words) {
-                        if (word.equals(searchWord)) {
-                            builder.append("<mark>").append(word).append("</mark>");
-                            builder.append(" ");
-                        } else {
-                            builder.append(word);
-                            builder.append(" ");
-                        }
-                    }
-
-                    return builder.toString().trim();
+                    return markWord(words, searchWord);
                 }
             }
         }
@@ -146,5 +118,38 @@ public class SearchSnippetServiceImpl implements SearchSnippetService {
 
     private String getHalfWord(String word) {
         return word.substring(0, word.length() / 2);
+    }
+
+    private String findWord(List<String> words, String halfWord, List<Lemma> lemmaList) {
+        for (String word : words) {
+
+            if (word.contains(halfWord)) {
+                if (isLemmaPresent(lemmaList, lemmaService.getLemmaSet(word))) {
+                    return word;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private String markWord(List<String> words, String searchWord) {
+        StringBuilder builder = new StringBuilder();
+
+        for (String word : words) {
+            if (word.equals(searchWord)) {
+                builder.append("<mark>").append(word).append("</mark>");
+                builder.append(" ");
+            } else {
+                builder.append(word);
+                builder.append(" ");
+            }
+        }
+
+        return builder.toString().trim();
+    }
+
+    private String concatResultList(List<String> resultList) {
+        return String.join(" ", resultList).trim();
     }
 }
