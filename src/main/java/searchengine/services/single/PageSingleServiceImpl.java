@@ -32,7 +32,7 @@ public class PageSingleServiceImpl implements PageSingleService {
     @Transactional
     public void indexingSinglePage(Page oldPpage) {
         IndexingParamDto dto = createDto(oldPpage);
-        deletePldPageData(oldPpage);
+        deleteOldPageData(oldPpage);
         Page newPage = createNewPage(dto);
         contentProcessing(newPage);
     }
@@ -46,7 +46,7 @@ public class PageSingleServiceImpl implements PageSingleService {
                 .build();
     }
 
-    private void deletePldPageData(Page page) {
+    private void deleteOldPageData(Page page) {
         Set<Index> indexSet = page.getIndexSet();
         List<Lemma> lemmaList = indexSet.stream()
                 .map(Index::getLemma)
